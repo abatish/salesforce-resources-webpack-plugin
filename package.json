@@ -1,7 +1,7 @@
 {
-  "name": "salesforce-resource-webpack-plugin",
+  "name": "salesforce-resources-webpack-plugin",
   "version": "0.0.1",
-  "description": "A webpack plugin to convert css and js to Static Resources, and HTML to pages.",
+  "description": "A webpack plugin to convert CSS and JavaScript to Static Resources, and HTML to pages.",
   "main": "dist/index.js",
   "scripts": {
     "build": "babel lib/plugin.js -o dist/index.js"
