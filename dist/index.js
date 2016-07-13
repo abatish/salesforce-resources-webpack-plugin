@@ -262,11 +262,13 @@ module.exports =
 	          var assetExt = _path2.default.extname(assetName);
 	          var assetConfig = this._configForExtension(assetExt);
 
-	          if (!options[assetConfig.extension]) {
-	            options[assetConfig.extension] = [];
-	          }
+	          if (assetConfig) {
+	            if (!options[assetConfig.extension]) {
+	              options[assetConfig.extension] = [];
+	            }
 
-	          options[assetConfig.extension].push(_path2.default.basename(assetName, assetExt));
+	            options[assetConfig.extension].push(_path2.default.basename(assetName, assetExt));
+	          }
 	        }
 	      } catch (err) {
 	        _didIteratorError3 = true;
@@ -585,12 +587,40 @@ module.exports =
 	// shim for using process in browser
 
 	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	(function () {
+	  try {
+	    cachedSetTimeout = setTimeout;
+	  } catch (e) {
+	    cachedSetTimeout = function () {
+	      throw new Error('setTimeout is not defined');
+	    }
+	  }
+	  try {
+	    cachedClearTimeout = clearTimeout;
+	  } catch (e) {
+	    cachedClearTimeout = function () {
+	      throw new Error('clearTimeout is not defined');
+	    }
+	  }
+	} ())
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -606,7 +636,7 @@ module.exports =
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = cachedSetTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -623,7 +653,7 @@ module.exports =
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    cachedClearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -635,7 +665,7 @@ module.exports =
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        cachedSetTimeout(drainQueue, 0);
 	    }
 	};
 
@@ -5113,25 +5143,25 @@ module.exports =
 /* 128 */
 /***/ function(module, exports) {
 
-	module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\r\n    <% if(options['.page'] && options['.page'].length > 0 ) { %>\r\n    <types>\r\n      <% options['.page'].forEach(function (page) { %>\r\n        <members><%= page %></members>\r\n      <% }) %>\r\n      <name>ApexPage</name>\r\n    </types>\r\n    <% } %>\r\n    <% if(options['.resource'] && options['.resource'].length > 0 ) { %>\r\n    <types>\r\n      <% options['.resource'].forEach(function (resource) { %>\r\n        <members><%= resource %></members>\r\n      <% }) %>\r\n      <name>StaticResource</name>\r\n    </types>\r\n    <% } %>\r\n    <version><%= options.apiVersion %></version>\r\n</Package>\r\n"
+	module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n    <% if(options['.page'] && options['.page'].length > 0 ) { %>\n    <types>\n      <% options['.page'].forEach(function (page) { %>\n        <members><%= page %></members>\n      <% }) %>\n      <name>ApexPage</name>\n    </types>\n    <% } %>\n    <% if(options['.resource'] && options['.resource'].length > 0 ) { %>\n    <types>\n      <% options['.resource'].forEach(function (resource) { %>\n        <members><%= resource %></members>\n      <% }) %>\n      <name>StaticResource</name>\n    </types>\n    <% } %>\n    <version><%= options.apiVersion %></version>\n</Package>\n"
 
 /***/ },
 /* 129 */
 /***/ function(module, exports) {
 
-	module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<ApexPage xmlns=\"http://soap.sforce.com/2006/04/metadata\">\r\n    <apiVersion>36.0</apiVersion>\r\n    <availableInTouch>false</availableInTouch>\r\n    <confirmationTokenRequired>false</confirmationTokenRequired>\r\n    <label><%= options.basename %></label>\r\n</ApexPage>\r\n"
+	module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ApexPage xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n    <apiVersion>36.0</apiVersion>\n    <availableInTouch>false</availableInTouch>\n    <confirmationTokenRequired>false</confirmationTokenRequired>\n    <label><%= options.basename %></label>\n</ApexPage>\n"
 
 /***/ },
 /* 130 */
 /***/ function(module, exports) {
 
-	module.exports = "<apex:page\r\n  showHeader=\"<%= (options.showHeader !== undefined) ? options.showHeader : true %>\"\r\n  sidebar=\"<%= (options.sidebar !== undefined) ? options.sidebar : true %>\"\r\n  standardStylesheets=\"<%= (options.standardStylesheets !== undefined) ? options.standardStylesheets : true %>\"\r\n  applyHtmlTag=\"<%= (options.applyHtmlTag !== undefined) ? options.applyHtmlTag : true %>\"\r\n  applyBodyTag=\"<%= (options.applyBodyTag !== undefined) ? options.applyBodyTag : true %>\">\r\n\r\n  <head>\r\n    <% if(options['.css'] ) { %>\r\n    <% options['.css'].reverse().forEach(function(name) { %>\r\n      <apex:stylesheet value=\"{! URLFOR($Resource.<%= name %>) }\" />\r\n    <% }) %>\r\n    <% } %>\r\n  </head>\r\n\r\n  <body>\r\n    <% if(options.remoteObject) { %>\r\n      <apex:remoteObjects jsNamespace=\"<%= options.remoteObject.namespace %>\">\r\n        <% Object.keys(options.remoteObject.models).forEach(function (modelName) { %>\r\n          <apex:remoteObjectModel\r\n            name=\"<%= options.remoteObject.models[modelName].packageNamespace %><%= modelName %>\" \r\n            fields=\"<%= options.remoteObject.models[modelName].fields %>\"\r\n          />\r\n        <% }) %>\r\n      </apex:remoteObjects >\r\n    <% } %>\r\n\r\n    <% if (options.appMountId) { %>\r\n      <div id=\"<%= options.appMountId%>\"></div>\r\n    <% } %>\r\n\r\n    <% if(options['.js'] ) { %>\r\n    <% options['.js'].reverse().forEach(function(name) { %>\r\n      <script src=\"{! URLFOR($Resource.<%= name %>) }\"></script>\r\n    <% }) %>\r\n    <% } %>\r\n\r\n  </body>\r\n\r\n</apex:page>\r\n"
+	module.exports = "<apex:page\n  showHeader=\"<%= (options.showHeader !== undefined) ? options.showHeader : true %>\"\n  sidebar=\"<%= (options.sidebar !== undefined) ? options.sidebar : true %>\"\n  standardStylesheets=\"<%= (options.standardStylesheets !== undefined) ? options.standardStylesheets : true %>\"\n  applyHtmlTag=\"<%= (options.applyHtmlTag !== undefined) ? options.applyHtmlTag : true %>\"\n  applyBodyTag=\"<%= (options.applyBodyTag !== undefined) ? options.applyBodyTag : true %>\">\n\n  <head>\n    <% if(options['.css'] ) { %>\n    <% options['.css'].reverse().forEach(function(name) { %>\n      <apex:stylesheet value=\"{! URLFOR($Resource.<%= name %>) }\" />\n    <% }) %>\n    <% } %>\n  </head>\n\n  <body>\n    <% if(options.remoteObject) { %>\n      <apex:remoteObjects jsNamespace=\"<%= options.remoteObject.namespace %>\">\n        <% Object.keys(options.remoteObject.models).forEach(function (modelName) { %>\n          <apex:remoteObjectModel\n            name=\"<%= options.remoteObject.models[modelName].packageNamespace %><%= modelName %>\"\n            fields=\"<%= options.remoteObject.models[modelName] %>\"\n          />\n        <% }) %>\n      </apex:remoteObjects >\n    <% } %>\n\n    <% if (options.appMountId) { %>\n      <div id=\"<%= options.appMountId%>\"></div>\n    <% } %>\n\n    <% if(options['.js'] ) { %>\n    <% options['.js'].reverse().forEach(function(name) { %>\n      <script src=\"{! URLFOR($Resource.<%= name %>) }\"></script>\n    <% }) %>\n    <% } %>\n\n  </body>\n\n</apex:page>\n"
 
 /***/ },
 /* 131 */
 /***/ function(module, exports) {
 
-	module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<StaticResource xmlns=\"http://soap.sforce.com/2006/04/metadata\">\r\n    <cacheControl>Public</cacheControl>\r\n    <contentType><%= options.filetype === '.css' ? 'text/css' : 'application/javascript' %></contentType>\r\n</StaticResource>\r\n"
+	module.exports = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<StaticResource xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n    <cacheControl>Public</cacheControl>\n    <contentType><%= options.filetype === '.css' ? 'text/css' : 'application/javascript' %></contentType>\n</StaticResource>\n"
 
 /***/ }
 /******/ ]);
