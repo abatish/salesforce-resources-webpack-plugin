@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = function karmaConfig(config) {
 
@@ -18,7 +19,22 @@ module.exports = function karmaConfig(config) {
       dir: 'coverage/',
       type: 'html'
     },
-    webpack: require('./webpack.config'),
+    webpack: {
+      module: {
+        loaders: [
+          {
+            exclude: /node_modules/,
+            loader: "babel",
+            test: /\.js$/,
+          }
+        ]
+      },
+
+      plugins: [
+        // Functional components should be lib-agnostic
+        new webpack.ProvidePlugin({ React: "react" }),
+      ],
+    },
     webpackMiddleware: {
       noInfo: true
     }
