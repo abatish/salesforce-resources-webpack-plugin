@@ -18,7 +18,20 @@ module.exports = function karmaConfig(config) {
       dir: 'coverage/',
       type: 'html'
     },
-    webpack: require('./webpack.config'),
+    webpack: {
+      entry: path.resolve(__dirname, "lib"),
+      module: {
+        loaders: [
+          {
+            include: [
+              path.resolve(__dirname, "lib")
+            ],
+            loader: "babel-loader",
+            test: /\.js$/,
+          }
+        ]
+      }
+    },
     webpackMiddleware: {
       noInfo: true
     }
